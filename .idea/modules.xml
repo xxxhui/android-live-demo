@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/LiveDemo.iml" filepath="$PROJECT_DIR$/LiveDemo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/common/common.iml" filepath="$PROJECT_DIR$/common/common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/videocapture/videocapture.iml" filepath="$PROJECT_DIR$/videocapture/videocapture.iml" />
+      <module fileurl="file://$PROJECT_DIR$/videocodec/videocodec.iml" filepath="$PROJECT_DIR$/videocodec/videocodec.iml" />
+      <module fileurl="file://$PROJECT_DIR$/videopublish/videopublish.iml" filepath="$PROJECT_DIR$/videopublish/videopublish.iml" />
+      <module fileurl="file://$PROJECT_DIR$/videorender/videorender.iml" filepath="$PROJECT_DIR$/videorender/videorender.iml" />
+    </modules>
+  </component>
+</project>
