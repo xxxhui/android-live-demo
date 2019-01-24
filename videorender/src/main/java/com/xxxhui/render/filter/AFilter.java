@@ -12,8 +12,6 @@ import android.opengl.GLES20;
 import android.util.Log;
 import android.util.SparseArray;
 
-import com.xxxhui.render.utils.MatrixUtils;
-
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

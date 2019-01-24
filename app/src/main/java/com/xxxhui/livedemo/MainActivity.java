@@ -1,10 +1,12 @@
 package com.xxxhui.livedemo;
 
 import android.Manifest;
+import android.graphics.BitmapFactory;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.EGL14;
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +20,8 @@ import android.view.WindowManager;
 import com.xxxhui.codec.EncoderDrainListener;
 import com.xxxhui.codec.VideoEncodeParam;
 import com.xxxhui.codec.VideoEncoderCodec;
+import com.xxxhui.render.filter.MatrixUtils;
+import com.xxxhui.render.filter.WaterMarkFilter;
 import com.xxxhui.render.gles.EglCore;
 import com.xxxhui.render.gles.FullFrameRect;
 import com.xxxhui.render.gles.Texture2dProgram;
@@ -29,7 +33,18 @@ import net.butterflytv.rtmp_client.RTMPMuxer;
 
 import java.nio.ByteBuffer;
 
-
+/**
+ * 发布直播的步骤：
+ * 1，音视频数据采集
+ * 2，音视频数据编码
+ * 3，音视频数据上传
+ * <p>
+ * opengl环境创建步骤：
+ * 1，初始化EGLDisplay
+ * 2，创建EGLConfig
+ * 3，创建EGLContext
+ * 4，创建EGLSurface
+ */
 public class MainActivity extends AppCompatActivity implements EncoderDrainListener {
 
     private static final String TAG = "MainActivity";
@@ -63,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements EncoderDrainListe
                 Manifest.permission.CAMERA,
                 Manifest.permission.INTERNET,
                 Manifest.permission.ACCESS_NETWORK_STATE
-        }, 321);
+        }, 1);
 
         mSurfaceView = findViewById(R.id.sfv);
 
@@ -72,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements EncoderDrainListe
         mEncoderCodec = new VideoEncoderCodec();
         rtmpMuxer = new RTMPMuxer();
 
+        Matrix.setIdentityM(mSTMatrix, 0);
 
         mSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
@@ -99,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements EncoderDrainListe
                 CameraParam cameraParam = new CameraParam();
                 cameraParam.setCameraId(Camera.CameraInfo.CAMERA_FACING_FRONT);
                 cameraParam.setSurfaceTexture(mSurfaceTexture);
-                cameraParam.setSize(new android.util.Pair<Integer, Integer>(720, 1280));
+                cameraParam.setSize(new android.util.Pair<>(720, 1280));
                 mCameraCapture.init(cameraParam);
                 mCameraCapture.start();
 
@@ -111,8 +127,8 @@ public class MainActivity extends AppCompatActivity implements EncoderDrainListe
                          * 开启rtmp推流
                          */
                         int open = rtmpMuxer.open("rtmp://gx-push.loomo.com/gx/test-ygf", 0, 0);
-                        Log.d(TAG, "rtmpMuxer open "+open);
-                        if(open < 0) {
+                        Log.d(TAG, "rtmpMuxer open " + open);
+                        if (open < 0) {
                             throw new RuntimeException("open error");
                         }
 
@@ -141,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements EncoderDrainListe
 
                         synchronized (mLock) {
 
-                            if(mEglCore == null) {
+                            if (mEglCore == null) {
                                 return;
                             }
 
@@ -151,11 +167,13 @@ public class MainActivity extends AppCompatActivity implements EncoderDrainListe
 
                             mCameraWindowSurface.makeCurrent();
                             surfaceTexture.updateTexImage();
-                            mSurfaceTexture.getTransformMatrix(mSTMatrix);
+//                            mSurfaceTexture.getTransformMatrix(mSTMatrix);
                             mCameraFullScreen.drawFrame(mTextureId, mSTMatrix);
+
+                            //drawBox(20);
                             mCameraWindowSurface.swapBuffers();
 
-                            if(!isStartRtmp) {
+                            if (!isStartRtmp) {
                                 return;
                             }
 
@@ -171,8 +189,9 @@ public class MainActivity extends AppCompatActivity implements EncoderDrainListe
 
                             mEncoderWindowSurface.makeCurrent();
                             mEncodeFullScreen = new FullFrameRect(new Texture2dProgram(Texture2dProgram.ProgramType.TEXTURE_EXT));
-                            surfaceTexture.getTransformMatrix(mSTMatrix);
+//                            surfaceTexture.getTransformMatrix(mSTMatrix);
                             mEncodeFullScreen.drawFrame(mTextureId, mSTMatrix);
+                            drawBox(20);
                             mEncoderWindowSurface.setPresentationTime(System.nanoTime());
                             mEncoderWindowSurface.swapBuffers();
                         }
@@ -206,6 +225,18 @@ public class MainActivity extends AppCompatActivity implements EncoderDrainListe
             }
         });
 
+    }
+
+    /**
+     * Draws a box, with position offset.
+     */
+    private void drawBox(int posn) {
+        int xpos = (posn * 4) % (720 - 50);
+        GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
+        GLES20.glScissor(xpos, 100, 100, 100);
+        GLES20.glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
     }
 
 

@@ -78,12 +78,20 @@ public class Drawable2d {
         -1.0f,  1.0f,   // 2 top left
          1.0f,  1.0f,   // 3 top swipe_right
     };
+//    private static final float FULL_RECTANGLE_TEX_COORDS[] = {
+//        0.0f, 0.0f,     // 0 bottom left
+//        1.0f, 0.0f,     // 1 bottom swipe_right
+//        0.0f, 1.0f,     // 2 top left
+//        1.0f, 1.0f      // 3 top swipe_right
+//    };
+
     private static final float FULL_RECTANGLE_TEX_COORDS[] = {
-        0.0f, 0.0f,     // 0 bottom left
-        1.0f, 0.0f,     // 1 bottom swipe_right
-        0.0f, 1.0f,     // 2 top left
-        1.0f, 1.0f      // 3 top swipe_right
+            0.0f, 1.0f,     // 0 bottom left
+            0.0f, 0.0f,     // 1 bottom swipe_right
+            1.0f, 1.0f,     // 2 top left
+            1.0f, 0.0f      // 3 top swipe_right
     };
+
     private static final FloatBuffer FULL_RECTANGLE_BUF =
             GlUtil.createFloatBuffer(FULL_RECTANGLE_COORDS);
     private static final FloatBuffer FULL_RECTANGLE_TEX_BUF =
