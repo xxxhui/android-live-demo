@@ -134,7 +134,8 @@ public class MainActivity extends AppCompatActivity implements EncoderDrainListe
                         /**
                          * 开启rtmp推流
                          */
-                        int open = rtmpMuxer.open("rtmp://gx-push.loomo.com/gx/test-ygf", 0, 0);
+                        String url = "rtmp://xxx";
+                        int open = rtmpMuxer.open(url, 0, 0);
                         Log.d(TAG, "rtmpMuxer open " + open);
                         if (open < 0) {
                             throw new RuntimeException("open error");
