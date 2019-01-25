@@ -1,7 +1,6 @@
 package com.xxxhui.livedemo;
 
 import android.Manifest;
-import android.graphics.BitmapFactory;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.EGL14;
@@ -14,18 +13,16 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.Window;
 import android.view.WindowManager;
 
 import com.xxxhui.codec.EncoderDrainListener;
 import com.xxxhui.codec.VideoEncodeParam;
 import com.xxxhui.codec.VideoEncoderCodec;
-import com.xxxhui.render.filter.MatrixUtils;
-import com.xxxhui.render.filter.WaterMarkFilter;
 import com.xxxhui.render.gles.EglCore;
 import com.xxxhui.render.gles.FullFrameRect;
 import com.xxxhui.render.gles.Texture2dProgram;
 import com.xxxhui.render.gles.WindowSurface;
+import com.xxxhui.render.shape.Triangle;
 import com.xxxhui.videocapture.CameraCapture;
 import com.xxxhui.videocapture.CameraParam;
 
@@ -36,14 +33,22 @@ import java.nio.ByteBuffer;
 /**
  * 发布直播的步骤：
  * 1，音视频数据采集
- * 2，音视频数据编码
- * 3，音视频数据上传
- * <p>
+ * 2，音视频数据处理
+ * 3，音视频数据编码
+ * 4，音视频数据上传
+ *
  * opengl环境创建步骤：
  * 1，初始化EGLDisplay
  * 2，创建EGLConfig
  * 3，创建EGLContext
  * 4，创建EGLSurface
+ *
+ * opengl2.0/3.0绘制核心步骤：
+ * 1，根据顶点着色器和片元着色器创建opengl程序 glCreateProgram
+ * 2，向opengl程序传递数据 glVertexAttribPointer glUniform4fv 等
+ * 3，选择绘制方式并绘制 glDrawArrays 等
+ *
+ *
  */
 public class MainActivity extends AppCompatActivity implements EncoderDrainListener {
 
@@ -65,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements EncoderDrainListe
     private final Object mLock = new Object();
 
     private final float[] mSTMatrix = new float[16];
+
+    private Triangle mTriangle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements EncoderDrainListe
                 mCameraFullScreen = new FullFrameRect(new Texture2dProgram(Texture2dProgram.ProgramType.TEXTURE_EXT));
                 mTextureId = mCameraFullScreen.createTextureObject();
 //                mCameraFullScreen.getProgram().setTexSize(720, 1080);
+                mTriangle = new Triangle();
 
                 /**
                  * 创建SurfaceTexture, 打开相机
@@ -167,8 +175,20 @@ public class MainActivity extends AppCompatActivity implements EncoderDrainListe
 
                             mCameraWindowSurface.makeCurrent();
                             surfaceTexture.updateTexImage();
+
+//                            GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+//                            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+
 //                            mSurfaceTexture.getTransformMatrix(mSTMatrix);
+                            /**
+                             * 画相机采集的图像数据
+                             */
                             mCameraFullScreen.drawFrame(mTextureId, mSTMatrix);
+
+                            /**
+                             * 画三角形
+                             */
+                            mTriangle.draw();
 
                             //drawBox(20);
                             mCameraWindowSurface.swapBuffers();
